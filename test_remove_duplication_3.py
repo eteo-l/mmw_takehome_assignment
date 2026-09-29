@@ -1,6 +1,6 @@
 # Tests for problem 3: remove duplication
 import pytest
-from remove_duplication_3 import import_teacher_row, import_student_row
+from remove_duplication_3 import import_teacher_row, import_student_row, import_administrator_row
 
 
 class TestImportTeacherRow:
@@ -91,6 +91,12 @@ class TestImportTeacherRow:
     def test_teacher_none_email_raises_attribute_error(self):
         """Test that None email raises AttributeError."""
         row = ["John Doe", None]
+        with pytest.raises(AttributeError):
+            import_teacher_row(row)
+
+    def test_teacher_empty_name_none_email_raises_attribute_error(self):
+        """Test that empty name with None email raises AttributeError (email stripped before validation)."""
+        row = ["", None]
         with pytest.raises(AttributeError):
             import_teacher_row(row)
 
@@ -199,8 +205,76 @@ class TestImportStudentRow:
         with pytest.raises(AttributeError):
             import_student_row(row)
 
+    def test_student_empty_name_none_email_raises_attribute_error(self):
+        """Test that empty name with None email raises AttributeError (email stripped before validation)."""
+        row = ["", None]
+        with pytest.raises(AttributeError):
+            import_student_row(row)
+
     def test_student_valid_two_columns_raises_index_error(self):
         """Test that valid name/email but only two columns raises IndexError."""
         row = ["Anna Johnson", "anna@example.com"]
         with pytest.raises(IndexError):
             import_student_row(row)
+
+
+class TestImportAdministratorRow:
+    """Test suite for import_administrator_row."""
+
+    def test_valid_administrator_row(self):
+        """Test importing a valid administrator row."""
+        row = ["Sarah Admin", "sarah.admin@example.com"]
+        result = import_administrator_row(row)
+        assert result == {
+            "name": "Sarah Admin",
+            "email": "sarah.admin@example.com",
+            "role": "administrator"
+        }
+
+    def test_administrator_name_with_whitespace(self):
+        """Test that names are stripped of leading/trailing whitespace."""
+        row = ["  Bob Admin  ", "bob@example.com"]
+        result = import_administrator_row(row)
+        assert result["name"] == "Bob Admin"
+
+    def test_administrator_email_with_whitespace(self):
+        """Test that emails are stripped of leading/trailing whitespace."""
+        row = ["Carol Admin", "  carol@example.com  "]
+        result = import_administrator_row(row)
+        assert result["email"] == "carol@example.com"
+
+    def test_administrator_email_lowercased(self):
+        """Test that emails are converted to lowercase."""
+        row = ["David Admin", "DAVID@EXAMPLE.COM"]
+        result = import_administrator_row(row)
+        assert result["email"] == "david@example.com"
+
+    def test_administrator_empty_name_raises_error(self):
+        """Test that empty name raises ValueError."""
+        row = ["", "email@example.com"]
+        with pytest.raises(ValueError, match="^missing required field$"):
+            import_administrator_row(row)
+
+    def test_administrator_empty_email_raises_error(self):
+        """Test that empty email raises ValueError."""
+        row = ["Admin Name", ""]
+        with pytest.raises(ValueError, match="^missing required field$"):
+            import_administrator_row(row)
+
+    def test_administrator_missing_column_raises_index_error(self):
+        """Test that row with only one column raises IndexError."""
+        row = ["Admin Name"]
+        with pytest.raises(IndexError):
+            import_administrator_row(row)
+
+    def test_administrator_none_email_raises_attribute_error(self):
+        """Test that None email raises AttributeError."""
+        row = ["Admin Name", None]
+        with pytest.raises(AttributeError):
+            import_administrator_row(row)
+
+    def test_administrator_empty_name_none_email_raises_attribute_error(self):
+        """Test that empty name with None email raises AttributeError (email stripped before validation)."""
+        row = ["", None]
+        with pytest.raises(AttributeError):
+            import_administrator_row(row)
